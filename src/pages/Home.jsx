@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { Plane, ArrowRight, Wallet, BookHeart, Users, Wrench, Compass, PiggyBank } from 'lucide-react'
+import { Plane, ArrowRight, Cloud, CloudOff, Wallet, BookHeart, Users, Wrench, Compass, PiggyBank } from 'lucide-react'
 import { useStore } from '../data/store'
 import { today, daysBetween, fmt, fmtShort, byDateTime, ago } from '../lib/dates'
 import { BOOKING_TYPES } from '../lib/meta'
@@ -28,7 +28,7 @@ export function Countdown({ trip }) {
 }
 
 export default function Home() {
-  const { db, me, person } = useStore()
+  const { db, me, person, status, pending } = useStore()
   const nav = useNavigate()
   const [editing, setEditing] = useState(null)
   const { trip, cities, items } = db
@@ -41,6 +41,10 @@ export default function Home() {
     <div className="page">
       <header className="topbar">
         <div className="logo"><span className="ps">PS.</span> <span className="eu">Europe</span></div>
+        <span className={`sync ${status}`} title={pending ? `${pending} changes waiting to sync` : status}>
+          {status === 'offline' ? <CloudOff size={16} /> : <Cloud size={16} />}
+          {pending > 0 ? pending : status === 'synced' ? '✓' : status === 'offline' ? 'offline' : '…'}
+        </span>
         <Link to="/crew" className="avatars" aria-label="Travel crew">{db.crew.map((u) => <Avatar key={u.id} id={u.id} size={38} />)}</Link>
       </header>
 

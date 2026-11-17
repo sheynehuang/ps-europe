@@ -9,7 +9,6 @@ export const seed = () => ({
     { id: 'u1', name: 'Pei', emoji: '🌻', color: '#F6C177', role: 'Trip planner' },
     { id: 'u2', name: 'Sheyne', emoji: '🍋', color: '#BFE3B4', role: 'Snack scout' },
   ],
-  invites: [],
 
   cities: [
     { id: 'par', name: 'Paris', country: 'France', flag: '🇫🇷', start: '2026-12-09', end: '2026-12-12', lat: 48.8566, lng: 2.3522, tone: 'peach' },
@@ -138,5 +137,5 @@ export const seed = () => ({
     { id: 'l4', userId: 'u1', action: 'updated', col: 'items', title: 'Frecciarossa Florence → Rome', at: hoursAgo(12) },
   ],
 
-  settings: { currentUser: 'u1', rates: {}, ratesDate: '', ratesSource: '' },
+  settings: { rates: {}, ratesDate: '', ratesSource: '' },
 })

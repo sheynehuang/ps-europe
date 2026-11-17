@@ -7,9 +7,10 @@
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview --host",
-    "test": "node --test \"src/lib/*.test.js\""
+    "test": "node --test \"src/**/*.test.js\""
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.74.0",
     "react": "^19.3.1",

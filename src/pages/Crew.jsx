@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Send, Share2 } from 'lucide-react'
+import { Send, Share2, LogOut } from 'lucide-react'
 import { useStore } from '../data/store'
 import { ago } from '../lib/dates'
 import { PageHeader, Avatar, FormSheet, Seg } from '../components/ui'
@@ -7,16 +7,17 @@ import { PageHeader, Avatar, FormSheet, Seg } from '../components/ui'
 const COL = { items: 'plan', places: 'place', expenses: 'expense', memories: 'memory', docs: 'document', emergency: 'emergency info' }
 
 export default function Crew() {
-  const { db, me, add, update, setSettings, person } = useStore()
+  const { db, me, update, person, email: myEmail, members, invite: sendInvite, signOut, pending } = useStore()
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [editing, setEditing] = useState(null)
   const [who, setWho] = useState('all')
   const log = db.log.filter((l) => who === 'all' || l.userId === who)
 
-  const invite = (e) => {
+  const invite = async (e) => {
     e.preventDefault()
-    add('invites', { email, status: 'pending' })
-    setEmail('')
+    await sendInvite(email, name)
+    setEmail(''); setName('')
   }
   const share = async () => {
     const data = { title: 'PS. Europe', text: `Join our trip "${db.trip.name}" on PS. Europe!`, url: location.href.split('#')[0] }
@@ -27,10 +28,10 @@ export default function Crew() {
     <div className="page">
       <PageHeader back kicker="the dream team" title="Travel Crew" />
 
-      <section className="card">
-        <h3>You’re using the app as</h3>
-        <Seg value={me.id} onChange={(v) => setSettings({ currentUser: v })} options={db.crew.map((u) => ({ v: u.id, l: `${u.emoji} ${u.name}` }))} />
-        <p className="muted small">Switch to see how edits get attributed. Real sign-in arrives when Supabase is connected.</p>
+      <section className="card signed-in">
+        <Avatar id={me.id} size={40} />
+        <span className="grow"><b>Signed in as {me.name}</b><span className="muted small">{myEmail}{pending > 0 && ` · ${pending} changes waiting to sync`}</span></span>
+        <button className="icon-btn" onClick={() => confirm('Sign out?') && signOut()} aria-label="Sign out"><LogOut size={18} /></button>
       </section>
 
       <div className="stack">
@@ -46,12 +47,13 @@ export default function Crew() {
       <section className="card">
         <h3>Invite a travel companion</h3>
         <form className="invite" onSubmit={invite}>
+          <input required placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} style={{ maxWidth: 110 }} />
           <input type="email" required placeholder="friend@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           <button className="btn primary" aria-label="Send invite"><Send size={18} /></button>
         </form>
-        {db.invites.map((i) => <p key={i.id} className="muted small">✉️ {i.email} — {i.status}</p>)}
+        {members.map((m) => <p key={m.email} className="muted small">✉️ {m.email} — {person(m.crew_id)?.name ?? 'invited'}</p>)}
         <button className="btn ghost wide" onClick={share}><Share2 size={16} /> Share trip link</button>
-        <p className="muted small">Invites are recorded here; sending emails needs the Supabase backend.</p>
+        <p className="muted small">Invited emails can sign in right away. Share the link so they know where to go.</p>
       </section>
 
       <div className="section-head"><h2>Activity</h2></div>

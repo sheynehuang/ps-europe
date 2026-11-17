@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { ImagePlus, X } from 'lucide-react'
-import { useStore } from '../data/store'
+import { useStore, uid } from '../data/store'
+import { uploadPhoto } from '../data/backend'
 import { compress } from '../lib/images'
 import { fmt, today } from '../lib/dates'
 import { PageHeader, Fab, FormSheet, Empty, Who, Chip, Seg } from '../components/ui'
@@ -11,7 +12,7 @@ function Photos({ f, set }) {
   const [busy, setBusy] = useState(false)
   const onFiles = async (e) => {
     setBusy(true)
-    try { set('photos', [...(f.photos || []), ...(await Promise.all([...e.target.files].map((x) => compress(x))))]) }
+    try { set('photos', [...(f.photos || []), ...(await Promise.all([...e.target.files].map(async (x) => uploadPhoto(await compress(x), uid()))))]) }
     catch { alert('Could not read that photo.') }
     setBusy(false)
   }

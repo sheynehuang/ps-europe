@@ -381,3 +381,15 @@ textarea { resize: vertical; }
 }
 .budget .bar { flex: none; }
 .leaflet-tile-pane { filter: saturate(.75) sepia(.12) brightness(1.03); }
+
+/* Login + sync */
+.splash { min-height: 100dvh; display: grid; place-items: center; font-family: var(--script); font-size: 56px; color: var(--orange); animation: bob 1.6s ease-in-out infinite; }
+.login .logo { justify-content: center; margin: 10px 0 16px; }
+.login .hero { box-shadow: 0 6px 0 var(--ink); }
+.login .card h2 { margin-bottom: 2px; }
+.login .card p { margin: 0 0 4px; }
+.sync { margin-left: auto; margin-right: 10px; display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; padding: 5px 9px; border-radius: 999px; background: #F6EDE1; color: var(--ink-2); }
+.sync.synced { background: var(--green); color: var(--green-d); }
+.sync.offline { background: var(--yellow); color: var(--yellow-d); }
+.signed-in { display: flex; align-items: center; gap: 12px; }
+.signed-in .grow { display: flex; flex-direction: column; }

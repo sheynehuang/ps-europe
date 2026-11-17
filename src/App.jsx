@@ -1,7 +1,8 @@
 import { HashRouter, Routes, Route, NavLink, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { Home as HomeIcon, CalendarDays, Compass, PiggyBank, LayoutGrid } from 'lucide-react'
-import { StoreProvider } from './data/store'
+import { StoreProvider, useStore } from './data/store'
+import Login, { NotMember } from './pages/Login'
 import Home from './pages/Home'
 import Plan from './pages/Plan'
 import Explore from './pages/Explore'
@@ -42,9 +43,18 @@ function ScrollTop() {
   return null
 }
 
+function Gate({ children }) {
+  const { session, status } = useStore()
+  if (session === undefined) return <div className="splash"><span className="ps">PS.</span></div>
+  if (!session) return <main className="app"><Login /></main>
+  if (status === 'not-member') return <main className="app"><NotMember /></main>
+  return children
+}
+
 export default function App() {
   return (
     <StoreProvider>
+      <Gate>
       <HashRouter>
         <ScrollTop />
         <main className="app">
@@ -63,6 +73,7 @@ export default function App() {
         </main>
         <TabBar />
       </HashRouter>
+      </Gate>
     </StoreProvider>
   )
 }

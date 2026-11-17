@@ -25,8 +25,8 @@ export default function More() {
           </Link>
         ))}
       </div>
-      <button className="btn ghost danger wide" onClick={() => confirm('Reset all data back to the demo trip?') && reset()}>Reset demo data</button>
-      <p className="muted center small">Data is saved on this device only for now.</p>
+      <button className="btn ghost danger wide" onClick={() => confirm('Reset ALL shared data back to the demo trip? This affects everyone on the crew.') && reset()}>Reset demo data</button>
+      <p className="muted center small">Synced to the cloud for the whole crew.</p>
     </div>
   )
 }

@@ -42,10 +42,13 @@ src/pages/            one file per screen
 supabase/schema.sql   tables + row-level security matching the data model
 ```
 
-## Connecting Supabase later
+## Supabase (shared data + login)
 
-1. Create a project and run `supabase/schema.sql`.
-2. `npm i @supabase/supabase-js`, then add `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` to `.env`.
-3. Replace `load`/`save` in `src/data/backend.js` with table queries, and have `add/update/remove` in `store.jsx` write rows. Subscribe to realtime changes so both phones stay in sync.
-4. Replace the Crew "viewing as" switcher with Supabase Auth (magic link works well on phones). `settings.currentUser` becomes `auth.uid()`.
-5. Move memory photos to Supabase Storage (they're data URLs in localStorage today, which caps out around 5 MB).
+Already wired up in `src/data/backend.js`. All data lives in one `rows` table (JSON per item). A local cache plus an outbox keep the app usable when the connection drops, and changes sync when it comes back. Realtime pushes edits to the other phone.
+
+One-time setup:
+1. Supabase → SQL Editor: paste `supabase/schema.sql`, put your real emails in step 6, then Run.
+2. Authentication → Emails → **Magic Link** template: add `{{ .Token }}` so the email contains a 6-digit code. Codes work in home-screen apps; links don't.
+3. Sign in. The first sign-in fills the shared trip with the demo data.
+
+Invite more people from the Crew page (adds them to `members`).
