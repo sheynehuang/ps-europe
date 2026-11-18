@@ -5,6 +5,7 @@ import { useStore } from '../data/store'
 import { today, daysBetween, fmt, fmtShort, byDateTime, ago } from '../lib/dates'
 import { BOOKING_TYPES } from '../lib/meta'
 import HeroArt from '../components/HeroArt'
+import { GuideCard } from './Guide'
 import ItemCard from '../components/ItemCard'
 import ItemSheet from '../components/ItemSheet'
 import { Avatar, Chip } from '../components/ui'
@@ -50,6 +51,7 @@ export default function Home() {
 
       <div className="script hello">Bonjour, {me.name} <span className="wave">👋</span></div>
       <h1 className="display xl">{trip.name}</h1>
+      <GuideCard />
 
       <section className="hero">
         <HeroArt />

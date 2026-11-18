@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Pencil, ArrowRight } from 'lucide-react'
 import { useStore } from '../data/store'
 import { EXPENSE_CATS } from '../lib/meta'
@@ -71,6 +72,7 @@ function ExpenseSheet({ expense, onClose }) {
 
 export default function Money() {
   const { db, person, setTrip, city } = useStore()
+  const [params] = useSearchParams()
   const [filter, setFilter] = useState('all')
   const [editing, setEditing] = useState(null)
   const [budgetOpen, setBudgetOpen] = useState(false)
@@ -170,7 +172,7 @@ export default function Money() {
         </div>
       ))}
 
-      <Fab label="Add expense" onClick={() => setEditing({})} />
+      <Fab label="Add expense" hint={params.get('hint') === 'add'} onClick={() => setEditing({})} />
       {editing && <ExpenseSheet expense={editing} onClose={() => setEditing(null)} />}
       {budgetOpen && (
         <FormSheet title="Trip budget" initial={{ budgetTWD: budget }} onClose={() => setBudgetOpen(false)}

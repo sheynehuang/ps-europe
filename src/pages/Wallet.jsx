@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Phone, ShieldAlert } from 'lucide-react'
 import { useStore } from '../data/store'
 import { ITEM_TYPES, DOC_KINDS } from '../lib/meta'
@@ -31,7 +32,8 @@ function Ticket({ item, onClick }) {
 
 export default function Wallet() {
   const { db, add, update, remove } = useStore()
-  const [tab, setTab] = useState('bookings')
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState(params.get('tab') || 'bookings')
   const [editItem, setEditItem] = useState(null)
   const [editDoc, setEditDoc] = useState(null)
   const [editSos, setEditSos] = useState(null)

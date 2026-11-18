@@ -115,8 +115,8 @@ export function PageHeader({ kicker, title, back, right }) {
   )
 }
 
-export const Fab = ({ onClick, label = 'Add' }) => (
-  <button className="fab" onClick={onClick} aria-label={label}><Plus size={26} strokeWidth={2.6} /></button>
+export const Fab = ({ onClick, label = 'Add', hint }) => (
+  <button className={`fab ${hint ? 'hint' : ''}`} onClick={onClick} aria-label={label}><Plus size={26} strokeWidth={2.6} /></button>
 )
 
 export const Empty = ({ emoji, title, text, action }) => (

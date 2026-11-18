@@ -401,3 +401,26 @@ button.city-head { width: 100%; text-align: left; }
 .chip.swatch { width: 40px; height: 32px; padding: 0; }
 .coords { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .add-city { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; }
+
+/* Guide */
+.hint { animation: hintPulse 1.3s ease-in-out infinite; }
+@keyframes hintPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(233,136,79,.85); } 50% { box-shadow: 0 0 0 10px rgba(233,136,79,0); } }
+.guide-card { position: relative; display: flex; align-items: center; background: linear-gradient(135deg, var(--yellow), var(--peach)); border-radius: 20px; margin: -6px 0 18px; box-shadow: var(--shadow); }
+.guide-link { flex: 1; display: flex; align-items: center; gap: 12px; padding: 14px 16px; min-width: 0; }
+.guide-link .grow { display: flex; flex-direction: column; }
+.guide-x { width: 40px; align-self: stretch; font-size: 22px; color: var(--ink-2); text-align: center; }
+.more-guide { margin: 26px 0 0; }
+.more-guide + .btn { margin-top: 12px; }
+.guide-emoji { font-size: 26px; flex: none; }
+.guide-progress p { margin: 10px 0 0; }
+.guide-step { background: var(--paper); border-radius: 20px; padding: 14px 16px; border: 1px solid var(--line); box-shadow: var(--shadow); }
+.guide-step.next { border: 2px solid var(--orange); }
+.guide-step.done { opacity: .7; box-shadow: none; }
+.guide-step.done b { text-decoration: line-through; text-decoration-color: var(--green-d); }
+.guide-top { display: flex; align-items: center; gap: 10px; }
+.guide-top b { font-size: 16px; }
+.guide-num { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 14px; background: #F2E7D9; flex: none; }
+.guide-num.on { background: var(--green-d); color: #fff; }
+.guide-why, .guide-how { margin: 10px 0 0; font-size: 14px; }
+.guide-why { background: var(--yellow); color: var(--yellow-d); padding: 10px 12px; border-radius: 12px; }
+.guide-step .link { margin-top: 8px; }

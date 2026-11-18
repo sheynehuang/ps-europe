@@ -12,13 +12,14 @@ import Wallet from './pages/Wallet'
 import Memories from './pages/Memories'
 import Crew from './pages/Crew'
 import Tools from './pages/Tools'
+import Guide from './pages/Guide'
 
 const TABS = [
   { to: '/', label: 'Home', icon: HomeIcon },
   { to: '/plan', label: 'Plan', icon: CalendarDays },
   { to: '/explore', label: 'Explore', icon: Compass },
   { to: '/money', label: 'Money', icon: PiggyBank },
-  { to: '/more', label: 'More', icon: LayoutGrid, also: ['/wallet', '/memories', '/crew', '/tools'] },
+  { to: '/more', label: 'More', icon: LayoutGrid, also: ['/wallet', '/memories', '/crew', '/tools', '/guide'] },
 ]
 
 function TabBar() {
@@ -38,8 +39,12 @@ function TabBar() {
 }
 
 function ScrollTop() {
-  const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  const { pathname, search } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    // Guide links add ?hint=…; bring the pulsing button into view (it may sit in a side-scrolling row).
+    if (search.includes('hint=')) setTimeout(() => document.querySelector('.hint')?.scrollIntoView({ block: 'center', inline: 'center' }), 400)
+  }, [pathname, search])
   return null
 }
 
@@ -68,6 +73,7 @@ export default function App() {
             <Route path="/memories" element={<Memories />} />
             <Route path="/crew" element={<Crew />} />
             <Route path="/tools" element={<Tools />} />
+            <Route path="/guide" element={<Guide />} />
             <Route path="*" element={<Home />} />
           </Routes>
         </main>

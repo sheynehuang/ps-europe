@@ -63,7 +63,7 @@ function CitySheet({ city, onClose }) {
 }
 
 function TripSheet({ onClose }) {
-  const { db, setTrip } = useStore()
+  const { db, setTrip, setSettings } = useStore()
   return (
     <FormSheet title="Edit trip" initial={db.trip} onClose={onClose}
       fields={(f) => [
@@ -74,7 +74,7 @@ function TripSheet({ onClose }) {
         ] },
         { k: 'budgetTWD', label: 'Budget (TWD, everyone)', type: 'number', min: 0 },
       ]}
-      onSave={(f) => setTrip({ ...f, budgetTWD: Number(f.budgetTWD) || 0 })} />
+      onSave={(f) => { setTrip({ ...f, budgetTWD: Number(f.budgetTWD) || 0 }); setSettings({ guide: { ...db.settings.guide, trip: true } }) }} />
   )
 }
 
@@ -85,13 +85,14 @@ export default function Plan() {
   const [cityEdit, setCityEdit] = useState(null)
   const [tripEdit, setTripEdit] = useState(false)
   const sel = params.get('city') || 'all'
+  const hint = params.get('hint')
   const cities = db.cities.filter((c) => sel === 'all' || c.id === sel)
   const selCity = db.cities.find((c) => c.id === sel)
 
   return (
     <div className="page">
       <PageHeader kicker="day by day" title="Itinerary"
-        right={<button className="btn ghost sm" onClick={() => setTripEdit(true)}><Pencil size={14} /> Trip dates</button>} />
+        right={<button className={`btn ghost sm ${hint === 'trip' ? 'hint' : ''}`} onClick={() => setTripEdit(true)}><Pencil size={14} /> Trip dates</button>} />
       <p className="muted small trip-line">{db.trip.name} · {fmtShort(db.trip.start)} – {fmtShort(db.trip.end)} · {daysBetween(db.trip.start, db.trip.end) + 1} days</p>
 
       <div className="hscroll pills">
@@ -99,7 +100,7 @@ export default function Plan() {
         {db.cities.map((c) => (
           <button key={c.id} className={`pill ${sel === c.id ? 'on' : ''}`} onClick={() => setParams({ city: c.id })}>{c.flag} {c.name}</button>
         ))}
-        <button className="pill" onClick={() => setCityEdit({})}><Plus size={14} /> City</button>
+        <button className={`pill ${hint === 'city' ? 'hint' : ''}`} onClick={() => setCityEdit({})}><Plus size={14} /> City</button>
       </div>
 
       {!db.cities.length && <Empty emoji="🗺️" title="Where are you going?" text="Add your first city to start planning." action={<button className="btn primary" onClick={() => setCityEdit({})}>Add a city</button>} />}
@@ -140,7 +141,7 @@ export default function Plan() {
 
       {db.cities.length > 0 && <button className="day-empty add-city" onClick={() => setCityEdit({})}><Plus size={16} /> Add another city</button>}
 
-      <Fab label="Add to plan" onClick={() => setEditing(selCity ? { cityId: selCity.id, date: selCity.start } : {})} />
+      <Fab label="Add to plan" hint={hint === 'add'} onClick={() => setEditing(selCity ? { cityId: selCity.id, date: selCity.start } : {})} />
       {editing && <ItemSheet item={editing} onClose={() => setEditing(null)} />}
       {cityEdit && <CitySheet city={cityEdit} onClose={() => setCityEdit(null)} />}
       {tripEdit && <TripSheet onClose={() => setTripEdit(false)} />}
