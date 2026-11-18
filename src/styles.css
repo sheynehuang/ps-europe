@@ -393,3 +393,11 @@ textarea { resize: vertical; }
 .sync.offline { background: var(--yellow); color: var(--yellow-d); }
 .signed-in { display: flex; align-items: center; gap: 12px; }
 .signed-in .grow { display: flex; flex-direction: column; }
+
+/* Trip + city editing */
+.trip-line { margin: -10px 0 12px; }
+.page-head .btn.sm { margin-bottom: 4px; }
+button.city-head { width: 100%; text-align: left; }
+.chip.swatch { width: 40px; height: 32px; padding: 0; }
+.coords { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.add-city { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; }

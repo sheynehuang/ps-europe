@@ -11,7 +11,7 @@ const TILES = [
 ]
 
 export default function More() {
-  const { reset } = useStore()
+  const { reset, clearSample } = useStore()
   return (
     <div className="page">
       <PageHeader kicker="everything else" title="More" />
@@ -25,6 +25,7 @@ export default function More() {
           </Link>
         ))}
       </div>
+      <button className="btn primary wide" onClick={() => confirm('Delete all sample plans, places, expenses, memories and documents for everyone? Cities, crew, checklist and emergency info stay.') && clearSample()}>🧹 Clear sample data — start our real trip</button>
       <button className="btn ghost danger wide" onClick={() => confirm('Reset ALL shared data back to the demo trip? This affects everyone on the crew.') && reset()}>Reset demo data</button>
       <p className="muted center small">Synced to the cloud for the whole crew.</p>
     </div>

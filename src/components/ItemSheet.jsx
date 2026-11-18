@@ -6,7 +6,7 @@ import { FormSheet } from './ui'
 // Add/edit any itinerary entry: activity, flight, train, stay or reservation.
 export default function ItemSheet({ item, onClose }) {
   const { db, add, update, remove } = useStore()
-  const cityFor = (date) => db.cities.find((c) => date >= c.start && date < c.end)?.id ?? db.cities.at(-1).id
+  const cityFor = (date) => db.cities.find((c) => date >= c.start && date < c.end)?.id ?? db.cities.at(-1)?.id ?? ''
   const initial = { type: 'activity', date: db.trip.start, currency: 'EUR', ...item }
   initial.cityId ||= cityFor(initial.date)
 

@@ -1,29 +1,108 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Plus } from 'lucide-react'
+import { Plus, Pencil, MapPinned } from 'lucide-react'
 import { useStore } from '../data/store'
 import { eachDay, daysBetween, fmt, fmtShort, byDateTime } from '../lib/dates'
+import { COUNTRIES, codeOf, flagOf, geocode } from '../lib/countries'
 import ItemCard from '../components/ItemCard'
 import ItemSheet from '../components/ItemSheet'
-import { PageHeader, Fab, Chip } from '../components/ui'
+import { PageHeader, Fab, Chip, FormSheet, Empty } from '../components/ui'
+
+const TONES = ['peach', 'blue', 'pink', 'yellow', 'green']
+
+function CoordsField({ f, set }) {
+  const [state, setState] = useState('')
+  const find = async () => {
+    if (!f.name) return setState('Type the city name first')
+    setState('Searching…')
+    try {
+      const hit = await geocode(f.name, f.country)
+      if (!hit) return setState('Not found — check the spelling')
+      set('lat', hit.lat); set('lng', hit.lng); setState('Found ✓')
+    } catch { setState('No connection — try again later') }
+  }
+  return (
+    <div className="coords">
+      <button type="button" className="btn ghost sm" onClick={find}><MapPinned size={15} /> Find on map</button>
+      <span className="muted small">{state || (f.lat ? `${f.lat}, ${f.lng}` : 'Needed to show the city on the map')}</span>
+    </div>
+  )
+}
+
+function CitySheet({ city, onClose }) {
+  const { db, add, update, remove } = useStore()
+  const last = db.cities.at(-1)
+  const initial = { country: 'France', tone: TONES[db.cities.length % TONES.length], start: last?.end ?? db.trip.start, end: last?.end ?? db.trip.start, ...city }
+  const plans = city.id ? db.items.filter((i) => i.cityId === city.id).length : 0
+  return (
+    <FormSheet
+      title={city.id ? `Edit ${city.name}` : 'Add a city'}
+      initial={initial}
+      onClose={onClose}
+      fields={(f) => [
+        { k: 'name', label: 'City', required: true, placeholder: 'Vienna' },
+        { k: 'country', label: 'Country', options: COUNTRIES.map((c) => ({ v: c.name, l: `${flagOf(c.code)} ${c.name}` })) },
+        { row: [
+          { k: 'start', label: 'Arrive', type: 'date', required: true },
+          { k: 'end', label: 'Leave', type: 'date', required: true, min: f.start },
+        ] },
+        { k: 'coords', label: 'Map location', render: (f, set) => <CoordsField f={f} set={set} /> },
+        { k: 'tone', label: 'Colour', render: (f, set) => (
+          <div className="type-pick">{TONES.map((t) => <button type="button" key={t} aria-label={t} className={`chip ${t} swatch ${f.tone === t ? 'on' : ''}`} onClick={() => set('tone', t)} />)}</div>
+        ) },
+      ]}
+      onSave={(f) => {
+        if (!f.lat) alert('Saved without a map location — tap "Find on map" later to show it on the map.')
+        const row = { ...f, flag: flagOf(codeOf(f.country)) }
+        delete row.coords
+        city.id ? update('cities', city.id, row) : add('cities', row)
+      }}
+      onDelete={city.id && (() => (plans ? alert(`${city.name} still has ${plans} plans. Move or delete them first.`) : remove('cities', city.id)))}
+    />
+  )
+}
+
+function TripSheet({ onClose }) {
+  const { db, setTrip } = useStore()
+  return (
+    <FormSheet title="Edit trip" initial={db.trip} onClose={onClose}
+      fields={(f) => [
+        { k: 'name', label: 'Trip name', required: true },
+        { row: [
+          { k: 'start', label: 'Start', type: 'date', required: true },
+          { k: 'end', label: 'End', type: 'date', required: true, min: f.start },
+        ] },
+        { k: 'budgetTWD', label: 'Budget (TWD, everyone)', type: 'number', min: 0 },
+      ]}
+      onSave={(f) => setTrip({ ...f, budgetTWD: Number(f.budgetTWD) || 0 })} />
+  )
+}
 
 export default function Plan() {
   const { db } = useStore()
   const [params, setParams] = useSearchParams()
   const [editing, setEditing] = useState(null)
+  const [cityEdit, setCityEdit] = useState(null)
+  const [tripEdit, setTripEdit] = useState(false)
   const sel = params.get('city') || 'all'
   const cities = db.cities.filter((c) => sel === 'all' || c.id === sel)
+  const selCity = db.cities.find((c) => c.id === sel)
 
   return (
     <div className="page">
-      <PageHeader kicker="day by day" title="Itinerary" />
+      <PageHeader kicker="day by day" title="Itinerary"
+        right={<button className="btn ghost sm" onClick={() => setTripEdit(true)}><Pencil size={14} /> Trip dates</button>} />
+      <p className="muted small trip-line">{db.trip.name} · {fmtShort(db.trip.start)} – {fmtShort(db.trip.end)} · {daysBetween(db.trip.start, db.trip.end) + 1} days</p>
 
       <div className="hscroll pills">
         <button className={`pill ${sel === 'all' ? 'on' : ''}`} onClick={() => setParams({})}>🗺️ All</button>
         {db.cities.map((c) => (
           <button key={c.id} className={`pill ${sel === c.id ? 'on' : ''}`} onClick={() => setParams({ city: c.id })}>{c.flag} {c.name}</button>
         ))}
+        <button className="pill" onClick={() => setCityEdit({})}><Plus size={14} /> City</button>
       </div>
+
+      {!db.cities.length && <Empty emoji="🗺️" title="Where are you going?" text="Add your first city to start planning." action={<button className="btn primary" onClick={() => setCityEdit({})}>Add a city</button>} />}
 
       {cities.map((c) => {
         const isLast = c.id === db.cities.at(-1).id
@@ -33,11 +112,11 @@ export default function Plan() {
         const days = [...new Set([...range, ...mine.map((i) => i.date)])].sort()
         return (
           <section key={c.id} className="city-block">
-            <div className={`city-head ${c.tone}`}>
+            <button className={`city-head ${c.tone}`} onClick={() => setCityEdit(c)} aria-label={`Edit ${c.name}`}>
               <span className="flag big">{c.flag}</span>
               <div className="grow"><h2>{c.name}</h2><span>{c.country} · {fmtShort(c.start)} – {fmtShort(c.end)}</span></div>
-              <Chip tone="cream">{daysBetween(c.start, c.end)} nights</Chip>
-            </div>
+              <Chip tone="cream">{daysBetween(c.start, c.end)} nights <Pencil size={12} /></Chip>
+            </button>
             {days.map((d) => {
               const list = mine.filter((i) => i.date === d)
               return (
@@ -59,8 +138,12 @@ export default function Plan() {
         )
       })}
 
-      <Fab label="Add to plan" onClick={() => setEditing(sel === 'all' ? {} : { cityId: sel, date: db.cities.find((c) => c.id === sel).start })} />
+      {db.cities.length > 0 && <button className="day-empty add-city" onClick={() => setCityEdit({})}><Plus size={16} /> Add another city</button>}
+
+      <Fab label="Add to plan" onClick={() => setEditing(selCity ? { cityId: selCity.id, date: selCity.start } : {})} />
       {editing && <ItemSheet item={editing} onClose={() => setEditing(null)} />}
+      {cityEdit && <CitySheet city={cityEdit} onClose={() => setCityEdit(null)} />}
+      {tripEdit && <TripSheet onClose={() => setTripEdit(false)} />}
     </div>
   )
 }

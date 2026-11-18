@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import {
   supabase, loadCache, saveCache, fetchAll, fetchMembers, uploadAll, wipeRemote, subscribe,
   enqueue, flush, onPending, pendingOps, clearOutbox,
@@ -9,7 +9,8 @@ import { seed } from './seed'
 const Ctx = createContext(null)
 // crypto.randomUUID only exists on https/localhost; phones on a LAN dev server use plain http.
 export const uid = () => crypto.randomUUID?.() ?? Date.now().toString(36) + Math.random().toString(36).slice(2)
-const LOGGED = ['items', 'places', 'expenses', 'memories', 'docs', 'emergency']
+const LOGGED = ['items', 'places', 'expenses', 'memories', 'docs', 'emergency', 'cities']
+export const SAMPLE_COLS = ['items', 'places', 'expenses', 'memories', 'docs']
 const label = (r) => r.title ?? r.name ?? r.label ?? r.text ?? ''
 const ME_KEY = 'ps-europe-me'
 
@@ -60,6 +61,8 @@ export function StoreProvider({ children }) {
     return () => { supabase.removeChannel(ch); window.removeEventListener('online', onOnline) }
   }, [email])
 
+  // Route order always follows the dates, wherever cities are listed.
+  const view = useMemo(() => ({ ...db, cities: [...db.cities].sort((a, b) => a.start.localeCompare(b.start)) }), [db])
   const me = db.crew.find((u) => u.id === meId) ?? db.crew[0]
   const stamp = () => ({ updatedBy: me.id, updatedAt: new Date().toISOString() })
 
@@ -92,6 +95,12 @@ export function StoreProvider({ children }) {
     catch { alert('Reset needs an internet connection.') }
   }
 
+  // Bulk delete without one activity-log line per row.
+  const clearSample = () => {
+    for (const c of SAMPLE_COLS) for (const r of db[c]) enqueue({ col: c, id: r.id, del: true })
+    setDb((d) => ({ ...d, ...Object.fromEntries(SAMPLE_COLS.map((c) => [c, []])) }))
+  }
+
   const invite = async (inviteEmail, name) => {
     const u = add('crew', { name, emoji: '🌟', color: '#F7B9C8', role: 'Travel buddy' })
     const { error } = await supabase.from('members').insert({ email: inviteEmail.trim().toLowerCase(), crew_id: u.id })
@@ -104,7 +113,7 @@ export function StoreProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      db, me, add, update, remove, setTrip: setSingle('trip'), setSettings: setSingle('settings'), reset,
+      db: view, me, add, update, remove, setTrip: setSingle('trip'), setSettings: setSingle('settings'), reset, clearSample,
       person, city, session, email, members, status, pending, invite, signOut: () => supabase.auth.signOut(),
     }}>
       {children}

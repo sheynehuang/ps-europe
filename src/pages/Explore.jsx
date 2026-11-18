@@ -52,7 +52,7 @@ export default function Explore() {
   const [planEdit, setPlanEdit] = useState(null)
 
   const c = city(cityId)
-  const target = c ? { lat: c.lat, lng: c.lng, zoom: 13 } : { lat: 44.5, lng: 4, zoom: 4 }
+  const target = c?.lat ? { lat: c.lat, lng: c.lng, zoom: 13 } : { lat: 44.5, lng: 4, zoom: 4 }
   const places = db.places.filter((p) => (cat === 'all' || p.category === cat) && (cityId === 'all' || p.cityId === cityId) && !(hideVisited && p.visited))
   const toggle = (p) => update('places', p.id, { visited: !p.visited })
   const toPlan = (p) => setPlanEdit({ type: 'activity', title: p.name, placeId: p.id, cityId: p.cityId, location: p.name, date: city(p.cityId)?.start })
@@ -72,9 +72,9 @@ export default function Explore() {
           <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" />
           <FlyTo target={target} />
-          <ClickToAdd onPick={(ll) => setPlaceEdit({ lat: +ll.lat.toFixed(5), lng: +ll.lng.toFixed(5), cityId: cityId === 'all' ? db.cities[0].id : cityId })} />
-          <Polyline positions={db.cities.map((x) => [x.lat, x.lng])} pathOptions={{ color: '#E07B45', weight: 3, dashArray: '6 8' }} />
-          {cityId === 'all' && db.cities.map((x, i) => (
+          <ClickToAdd onPick={(ll) => setPlaceEdit({ lat: +ll.lat.toFixed(5), lng: +ll.lng.toFixed(5), cityId: cityId === 'all' ? db.cities[0]?.id ?? '' : cityId })} />
+          <Polyline positions={db.cities.filter((x) => x.lat).map((x) => [x.lat, x.lng])} pathOptions={{ color: '#E07B45', weight: 3, dashArray: '6 8' }} />
+          {cityId === 'all' && db.cities.map((x, i) => x.lat && (
             <Marker key={x.id} position={[x.lat, x.lng]} icon={pin(i + 1, '#3B2418', 'city')} eventHandlers={{ click: () => setCityId(x.id) }} />
           ))}
           {cityId !== 'all' && places.map((p) => (
@@ -118,7 +118,7 @@ export default function Explore() {
         })}
       </div>
 
-      <Fab label="Save a place" onClick={() => { const x = c ?? db.cities[0]; setPlaceEdit({ cityId: x.id, lat: x.lat, lng: x.lng }) }} />
+      <Fab label="Save a place" onClick={() => { const x = c ?? db.cities[0] ?? { id: '', lat: 48.8566, lng: 2.3522 }; setPlaceEdit({ cityId: x.id, lat: x.lat, lng: x.lng }) }} />
       {placeEdit && <PlaceSheet place={placeEdit} onClose={() => setPlaceEdit(null)} />}
       {planEdit && <ItemSheet item={planEdit} onClose={() => setPlanEdit(null)} />}
     </div>
