@@ -48,7 +48,7 @@ Already wired up in `src/data/backend.js`. All data lives in one `rows` table (J
 
 One-time setup:
 1. Supabase → SQL Editor: paste `supabase/schema.sql`, put your real emails in step 6, then Run.
-2. Authentication → Emails → **Magic Link** template: add `{{ .Token }}` so the email contains a 6-digit code. Codes work in home-screen apps; links don't.
-3. Sign in. The first sign-in fills the shared trip with the demo data.
+2. Authentication → URL Configuration → **Site URL**: `https://sheynehuang.github.io/ps-europe/` (where the confirmation email link lands).
+3. In the app, tap "Create account" (email + password), confirm via the email link, then sign in. The first sign-in fills the shared trip with the demo data.
 
 Invite more people from the Crew page (adds them to `members`).

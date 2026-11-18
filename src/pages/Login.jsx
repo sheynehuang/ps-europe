@@ -3,45 +3,52 @@ import { supabase } from '../data/backend'
 import { useStore } from '../data/store'
 import HeroArt from '../components/HeroArt'
 
-// Email code (not magic link): links open in Safari, but a home-screen app keeps its own login.
+// Email + password: the free Supabase mailer can't send codes, and email links open in Safari,
+// not the home-screen app. So email is only used once, to confirm the account.
 export default function Login() {
+  const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [step, setStep] = useState('email')
+  const [password, setPassword] = useState('')
+  const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
 
-  const run = async (e, fn) => {
-    e.preventDefault(); setBusy(true); setErr('')
-    const { error } = await fn().catch((x) => ({ error: x }))
+  const submit = async (e) => {
+    e.preventDefault(); setBusy(true); setErr(''); setMsg('')
+    const creds = { email: email.trim().toLowerCase(), password }
+    try {
+      if (mode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword(creds)
+        if (error) throw error
+      } else {
+        const { data, error } = await supabase.auth.signUp({ ...creds, options: { emailRedirectTo: location.origin + location.pathname } })
+        if (error) throw error
+        if (data.user?.identities?.length === 0) throw new Error('This email already has an account — sign in instead.')
+        setMsg('Almost there! Open the confirmation email and tap the link, then come back here and sign in.')
+        setMode('signin')
+      }
+    } catch (x) {
+      setErr(x.message === 'Email not confirmed' ? 'Please tap the link in your confirmation email first.' : x.message || 'Something went wrong — check your connection.')
+    }
     setBusy(false)
-    if (error) setErr(error.message || 'Something went wrong — check your connection.')
-    return !error
   }
-  const send = (e) => run(e, () => supabase.auth.signInWithOtp({ email: email.trim().toLowerCase() })).then((ok) => ok && setStep('code'))
-  const verify = (e) => run(e, () => supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code.trim(), type: 'email' }))
 
   return (
     <div className="page login">
       <div className="logo"><span className="ps">PS.</span> <span className="eu">Europe</span></div>
       <section className="hero"><HeroArt /></section>
       <div className="card">
-        {step === 'email' ? (
-          <form className="form" onSubmit={send}>
-            <h2>Hello, traveller 👋</h2>
-            <p className="muted">Sign in with your email — we’ll send you a login code.</p>
-            <input type="email" required autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <button className="btn primary" disabled={busy}>{busy ? 'Sending…' : 'Send me a code'}</button>
-          </form>
-        ) : (
-          <form className="form" onSubmit={verify}>
-            <h2>Check your inbox 💌</h2>
-            <p className="muted">Enter the code we sent to <b>{email}</b>.</p>
-            <input inputMode="numeric" autoComplete="one-time-code" required maxLength={10} placeholder="123456" value={code} onChange={(e) => setCode(e.target.value)} />
-            <button className="btn primary" disabled={busy}>{busy ? 'Checking…' : 'Sign in'}</button>
-            <button type="button" className="btn ghost" onClick={() => { setStep('email'); setCode('') }}>Use a different email</button>
-          </form>
-        )}
+        <form className="form" onSubmit={submit}>
+          <h2>{mode === 'signin' ? 'Hello, traveller 👋' : 'Join the crew ✨'}</h2>
+          <p className="muted">{mode === 'signin' ? 'Sign in to your shared trip.' : 'First time? Create your account with the email you were invited with.'}</p>
+          <input type="email" required autoComplete="email" placeholder="you@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="password" required minLength={6} autoComplete={mode === 'signin' ? 'current-password' : 'new-password'} placeholder="Password (6+ characters)" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <button className="btn primary" disabled={busy}>{busy ? '…' : mode === 'signin' ? 'Sign in' : 'Create account'}</button>
+          <button type="button" className="btn ghost" onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setErr(''); setMsg('') }}>
+            {mode === 'signin' ? 'First time here? Create an account' : 'Already have an account? Sign in'}
+          </button>
+        </form>
+        {msg && <p className="convert-preview small" style={{ marginTop: 12 }}>{msg}</p>}
         {err && <p className="error small">{err}</p>}
       </div>
     </div>
