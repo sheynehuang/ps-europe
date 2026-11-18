@@ -6,7 +6,7 @@ export const seed = () => ({
   trip: { name: 'Our big Europe adventure', start: '2026-12-09', end: '2026-12-29', budgetTWD: 260000 },
 
   crew: [
-    { id: 'u1', name: 'Pei', emoji: '🌻', color: '#F6C177', role: 'Trip planner' },
+    { id: 'u1', name: 'Pei-Ti', emoji: '🌻', color: '#F6C177', role: 'Trip planner' },
     { id: 'u2', name: 'Sheyne', emoji: '🍋', color: '#BFE3B4', role: 'Snack scout' },
   ],
 
@@ -101,10 +101,10 @@ export const seed = () => ({
   ],
 
   docs: [
-    { id: 'd1', kind: 'passport', title: 'Pei — Passport', detail: 'Expires Mar 2031 · ends in •••4821', notes: 'Scan saved in iCloud > Travel', ...by('u1') },
+    { id: 'd1', kind: 'passport', title: 'Pei-Ti — Passport', detail: 'Expires Mar 2031 · ends in •••4821', notes: 'Scan saved in iCloud > Travel', ...by('u1') },
     { id: 'd2', kind: 'passport', title: 'Sheyne — Passport', detail: 'Expires Aug 2029 · ends in •••0937', notes: '', ...by('u2') },
     { id: 'd3', kind: 'insurance', title: 'Travel insurance', detail: 'Policy no. (add yours)', notes: 'Covers 8 Dec – 30 Dec. Keep claim forms + receipts.', ...by('u1') },
-    { id: 'd4', kind: 'card', title: 'Cards we carry', detail: 'Visa (Pei), Mastercard (Sheyne), €200 cash each', notes: 'Choose to pay in EUR, never in TWD, at card terminals.', ...by('u2') },
+    { id: 'd4', kind: 'card', title: 'Cards we carry', detail: 'Visa (Pei-Ti), Mastercard (Sheyne), €200 cash each', notes: 'Choose to pay in EUR, never in TWD, at card terminals.', ...by('u2') },
   ],
 
   emergency: [
@@ -112,7 +112,7 @@ export const seed = () => ({
     { id: 'x2', label: 'Swiss ambulance', value: '144', notes: '', ...by('u1') },
     { id: 'x3', label: 'Insurance 24h assistance', value: '', notes: 'Add the hotline from your policy', ...by('u1') },
     { id: 'x4', label: 'Taiwan representative office (France)', value: '', notes: 'Add the number from boca.gov.tw before you fly', ...by('u1') },
-    { id: 'x5', label: 'Pei — blood type / allergies', value: 'A+ · no allergies', notes: '', ...by('u1') },
+    { id: 'x5', label: 'Pei-Ti — blood type / allergies', value: 'A+ · no allergies', notes: '', ...by('u1') },
     { id: 'x6', label: 'Sheyne — blood type / allergies', value: 'O+ · penicillin allergy', notes: '', ...by('u2') },
   ],
 

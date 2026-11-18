@@ -1,7 +1,7 @@
 -- PS. Europe — Supabase setup. Paste into Supabase → SQL Editor → Run (once).
 -- Every collection (items, places, expenses…) is stored as JSON rows in one table, mirroring src/data/seed.js.
 
--- 1. Who may use the trip. crew_id links an email to a person in the app (u1 = Pei, u2 = Sheyne).
+-- 1. Who may use the trip. crew_id links an email to a person in the app (u1 = Pei-Ti, u2 = Sheyne).
 create table members (
   email text primary key,
   crew_id text not null
