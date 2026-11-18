@@ -37,7 +37,7 @@ img { display: block; max-width: 100%; }
 :focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; border-radius: 10px; }
 
 .app { max-width: 480px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 120px); }
-.page { animation: fadeUp .35s ease both; }
+.page { animation: fade .35s ease; } /* opacity only, no fill: a transform here would trap position:fixed children (sheets, FAB) */
 .grow { flex: 1; min-width: 0; }
 .right { text-align: right; }
 .center { text-align: center; }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { X, Plus, ChevronLeft } from 'lucide-react'
 import { useStore } from '../data/store'
@@ -10,7 +11,8 @@ export function Sheet({ title, onClose, children }) {
     document.body.style.overflow = 'hidden'
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = '' }
   }, [onClose])
-  return (
+  // Portal to <body> so the sheet always covers the screen and the tab bar, whatever its parent's styling.
+  return createPortal(
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-grip" />
@@ -20,7 +22,8 @@ export function Sheet({ title, onClose, children }) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
 
