@@ -12,36 +12,36 @@ const standalone = () => navigator.standalone === true || matchMedia('(display-m
 
 // Setup steps in the recommended order. `auto` = the app can tell it's done; otherwise the user marks it.
 export const STEPS = [
-  { key: 'home', emoji: '📲', title: '把 App 加到主畫面',
-    why: '全螢幕使用，從主畫面一點就開，登入狀態也會一直保留。',
-    how: '用 Safari 打開這個網址 → 下方「分享」→「加入主畫面」。',
+  { key: 'home', emoji: '📲', title: 'Add the app to your Home Screen',
+    why: 'It opens full screen with one tap, like a real app, and you stay signed in.',
+    how: 'Open this site in Safari → tap Share → Add to Home Screen.',
     auto: () => standalone(), personal: true },
-  { key: 'trip', emoji: '🗓️', title: '設定旅程日期',
-    why: '倒數天數、總天數、每一天的 Day 1、Day 2…都是用旅程日期算的，所以第一個設定。',
-    how: '在 Plan 頁按右上角閃爍的「✏️ Trip dates」，填出發日和回程日。',
+  { key: 'trip', emoji: '🗓️', title: 'Set your trip dates',
+    why: 'The countdown, total days and every “Day 1, Day 2…” are counted from these dates, so set them first.',
+    how: 'On the Plan page, tap the glowing “✏️ Trip dates” button (top right) and enter your start and end dates.',
     to: '/plan?hint=trip' },
-  { key: 'cities', emoji: '🗺️', title: '設定城市路線',
-    why: '行程是依城市分組的。先把城市和日期設好，之後新增行程時會自動放進正確的城市。',
-    how: '點城市的彩色標題可以修改，按「+ City」新增。改了城市名一定要按「📍 Find on map」，地圖上才找得到。',
+  { key: 'cities', emoji: '🗺️', title: 'Set up your city route',
+    why: 'Plans are grouped by city. Set your cities and their dates first, and new plans will land in the right city automatically.',
+    how: 'Tap a city’s coloured header to edit it, or “+ City” to add one. After changing a city name, tap “📍 Find on map” so it shows up on the map.',
     to: '/plan?hint=city' },
-  { key: 'clear', emoji: '🧹', title: '清空範例資料',
-    why: '城市設好之後再清空，就不用一筆一筆刪除 29 個範例行程和 10 筆範例花費。城市、旅伴、行前清單、緊急資訊會保留。',
-    how: '在 More 頁按閃爍的「🧹 Clear sample data」。這會影響所有旅伴，而且無法復原。',
+  { key: 'clear', emoji: '🧹', title: 'Clear the sample data',
+    why: 'Do this once your cities are set: it removes the 29 sample plans and 10 sample expenses in one go. Cities, crew, checklist and emergency info are kept.',
+    how: 'On the More page, tap the glowing “🧹 Clear sample data”. This affects the whole crew and can’t be undone.',
     to: '/more?hint=clear',
     auto: (db) => !db.items.some((i) => SEED_ITEMS.has(i.id)) && !db.expenses.some((e) => SEED_EXPENSES.has(e.id)) },
-  { key: 'bookings', emoji: '✈️', title: '輸入航班與住宿',
-    why: '輸入後會自動整理到旅行錢包。在機場、飯店櫃台要報的訂位代碼，一打開就找得到。',
-    how: '在 Plan 頁按右下角閃爍的 +，類型選 Flight／Train／Stay，記得填「Confirmation code」。',
+  { key: 'bookings', emoji: '✈️', title: 'Add your flights and stays',
+    why: 'They show up in your Travel Wallet automatically, so booking codes are one tap away at the airport or hotel desk.',
+    how: 'On the Plan page, tap the glowing + (bottom right), choose Flight, Train or Stay, and fill in the Confirmation code.',
     to: '/plan?hint=add',
     auto: (db) => db.items.some((i) => !SEED_ITEMS.has(i.id) && ['flight', 'train', 'hotel'].includes(i.type)) },
-  { key: 'money', emoji: '💸', title: '記第一筆花費',
-    why: '先到 Tools → Currency 按一次「Fetch latest」抓匯率，之後記帳時就會自動帶入。分攤只選一個人，就是個人花費。',
-    how: '在 Money 頁按右下角閃爍的 +。',
+  { key: 'money', emoji: '💸', title: 'Log your first expense',
+    why: 'Tip: tap “Fetch latest” in Tools → Currency once, and rates fill in automatically when you log expenses. Split with just one person = a personal expense.',
+    how: 'On the Money page, tap the glowing + (bottom right).',
     to: '/money?hint=add',
     auto: (db) => db.expenses.some((e) => !SEED_EXPENSES.has(e.id)) },
-  { key: 'sos', emoji: '🆘', title: '填好緊急資訊',
-    why: '保險公司 24 小時專線、台灣駐外單位的電話，出發前就要查好。出事時點一下就能直接撥打。',
-    how: '在 Travel Wallet → Emergency，點「Tap to add」的項目，把電話填進去。',
+  { key: 'sos', emoji: '🆘', title: 'Fill in emergency info',
+    why: 'Look up your insurance 24h hotline and the Taiwan representative office numbers before you fly, so you can call with one tap.',
+    how: 'In Travel Wallet → Emergency, tap any “Tap to add” entry and enter the number.',
     to: '/wallet?tab=sos' },
 ]
 
@@ -60,9 +60,9 @@ export default function Guide() {
     <div className="page">
       <PageHeader back kicker="step by step" title="Getting started" />
       <section className="card guide-progress">
-        <div className="section-head tight"><h3>{doneCount === steps.length ? '全部完成，準備出發！🎉' : '開始設定你們的旅程'}</h3><b>{doneCount}/{steps.length}</b></div>
+        <div className="section-head tight"><h3>{doneCount === steps.length ? 'All set — bon voyage! 🎉' : 'Set up your trip'}</h3><b>{doneCount}/{steps.length}</b></div>
         <span className="bar"><i style={{ width: `${(doneCount / steps.length) * 100}%` }} /></span>
-        <p className="muted small">照順序做最順。完成的步驟會自動打勾，或自己按「標記完成」。進度是旅伴共用的，只有「加到主畫面」是每支手機各自計算。</p>
+        <p className="muted small">Go in order for the smoothest setup. Steps tick themselves when done, or tap “Mark as done”. Progress is shared with your crew, except the Home Screen step, which is per phone.</p>
       </section>
 
       <div className="stack">
@@ -78,12 +78,12 @@ export default function Guide() {
                 <p className="guide-why">💡 {s.why}</p>
                 <p className="guide-how">👉 {s.how}</p>
                 <div className="link-row">
-                  {s.to && <Link className="btn primary sm" to={s.to}>前往 <ArrowRight size={14} /></Link>}
-                  {!s.auto && <button className="btn ghost sm" onClick={() => mark(s.key, true)}>標記完成</button>}
+                  {s.to && <Link className="btn primary sm" to={s.to}>Go <ArrowRight size={14} /></Link>}
+                  {!s.auto && <button className="btn ghost sm" onClick={() => mark(s.key, true)}>Mark as done</button>}
                 </div>
               </>
             )}
-            {s.done && !s.auto && <button className="link small" onClick={() => mark(s.key, false)}>取消完成</button>}
+            {s.done && !s.auto && <button className="link small" onClick={() => mark(s.key, false)}>Undo</button>}
           </section>
         ))}
       </div>
@@ -102,12 +102,12 @@ export function GuideCard() {
       <Link to="/guide" className="guide-link">
         <span className="guide-emoji">🧭</span>
         <span className="grow">
-          <b>開始設定你們的旅程 · {doneCount}/{steps.length}</b>
-          <span className="muted small">下一步：{next.emoji} {next.title}</span>
+          <b>Set up your trip · {doneCount}/{steps.length}</b>
+          <span className="muted small">Next: {next.emoji} {next.title}</span>
         </span>
         <ArrowRight size={18} />
       </Link>
-      <button className="guide-x" aria-label="Hide guide" title="隱藏（之後可從 More 頁打開）"
+      <button className="guide-x" aria-label="Hide guide" title="Hide (reopen it from the More page)"
         onClick={() => { localStorage.setItem('ps-guide-hidden', '1'); setHidden(true) }}>×</button>
     </div>
   )

@@ -26,7 +26,7 @@ export default function More() {
           </Link>
         ))}
       </div>
-      <Link to="/guide" className="guide-card guide-link more-guide"><span className="guide-emoji">🧭</span><span className="grow"><b>Getting started 使用導覽</b><span className="muted small">一步步設定你們的真實旅程</span></span></Link>
+      <Link to="/guide" className="guide-card guide-link more-guide"><span className="guide-emoji">🧭</span><span className="grow"><b>Getting started</b><span className="muted small">Set up your real trip, step by step</span></span></Link>
       <button className={`btn primary wide ${params.get('hint') === 'clear' ? 'hint' : ''}`} onClick={() => confirm('Delete all sample plans, places, expenses, memories and documents for everyone? Cities, crew, checklist and emergency info stay.') && clearSample()}>🧹 Clear sample data — start our real trip</button>
       <button className="btn ghost danger wide" onClick={() => confirm('Reset ALL shared data back to the demo trip? This affects everyone on the crew.') && reset()}>Reset demo data</button>
       <p className="muted center small">Synced to the cloud for the whole crew.</p>
