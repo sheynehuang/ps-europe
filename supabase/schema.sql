@@ -22,7 +22,8 @@ language sql security definer stable set search_path = public as
 $$ select exists (select 1 from members where email = lower(auth.jwt() ->> 'email')) $$;
 
 alter table members enable row level security;
-create policy "members read" on members for select using (is_member());
+-- Each person can read only their own row, so emails stay private from the rest of the crew.
+create policy "members read own" on members for select using (email = lower(auth.jwt() ->> 'email'));
 create policy "members invite" on members for insert with check (is_member());
 
 alter table rows enable row level security;

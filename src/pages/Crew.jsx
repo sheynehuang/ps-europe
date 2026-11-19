@@ -7,17 +7,17 @@ import { PageHeader, Avatar, FormSheet, Seg } from '../components/ui'
 const COL = { items: 'plan', places: 'place', expenses: 'expense', memories: 'memory', docs: 'document', emergency: 'emergency info' }
 
 export default function Crew() {
-  const { db, me, update, person, email: myEmail, members, invite: sendInvite, signOut, pending } = useStore()
+  const { db, me, update, person, invite: sendInvite, signOut, pending } = useStore()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
+  const [invited, setInvited] = useState('')
   const [editing, setEditing] = useState(null)
   const [who, setWho] = useState('all')
   const log = db.log.filter((l) => who === 'all' || l.userId === who)
 
   const invite = async (e) => {
     e.preventDefault()
-    await sendInvite(email, name)
-    setEmail(''); setName('')
+    if (await sendInvite(email, name)) { setInvited(name); setEmail(''); setName('') }
   }
   const share = async () => {
     const data = { title: 'PS. Europe', text: `Join our trip "${db.trip.name}" on PS. Europe!`, url: location.href.split('#')[0] }
@@ -30,7 +30,7 @@ export default function Crew() {
 
       <section className="card signed-in">
         <Avatar id={me.id} size={40} />
-        <span className="grow"><b>Signed in as {me.name}</b><span className="muted small">{myEmail}{pending > 0 && ` · ${pending} changes waiting to sync`}</span></span>
+        <span className="grow"><b>Signed in as {me.name}</b><span className="muted small">{pending > 0 ? `${pending} changes waiting to sync` : 'All changes synced'}</span></span>
         <button className="icon-btn" onClick={() => confirm('Sign out?') && signOut()} aria-label="Sign out"><LogOut size={18} /></button>
       </section>
 
@@ -51,9 +51,9 @@ export default function Crew() {
           <input type="email" required placeholder="friend@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           <button className="btn primary" aria-label="Send invite"><Send size={18} /></button>
         </form>
-        {members.map((m) => <p key={m.email} className="muted small">✉️ {m.email} — {person(m.crew_id)?.name ?? 'invited'}</p>)}
+        {invited && <p className="convert-preview small" style={{ marginTop: 10 }}>🎉 {invited} is invited! Share the link and ask them to create an account with that email.</p>}
         <button className="btn ghost wide" onClick={share}><Share2 size={16} /> Share trip link</button>
-        <p className="muted small">Invited emails can sign in right away. Share the link so they know where to go.</p>
+        <p className="muted small">Emails stay private — the crew only sees names.</p>
       </section>
 
       <div className="section-head"><h2>Activity</h2></div>

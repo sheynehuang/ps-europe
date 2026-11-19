@@ -17,7 +17,6 @@ const ME_KEY = 'ps-europe-me'
 export function StoreProvider({ children }) {
   const [db, setDb] = useState(() => loadCache() ?? seed())
   const [session, setSession] = useState(undefined) // undefined = still checking
-  const [members, setMembers] = useState([])
   const [status, setStatus] = useState('loading')   // loading | synced | offline | not-member
   const [pending, setPending] = useState(0)
   const [meId, setMeId] = useState(() => localStorage.getItem(ME_KEY))
@@ -39,7 +38,7 @@ export function StoreProvider({ children }) {
         const m = await fetchMembers()
         const mine = m.find((x) => x.email === email.toLowerCase())
         if (!mine) return setStatus('not-member')
-        setMembers(m); setMeId(mine.crew_id); localStorage.setItem(ME_KEY, mine.crew_id)
+        setMeId(mine.crew_id); localStorage.setItem(ME_KEY, mine.crew_id)
         await flush()
         const rows = await fetchAll()
         let data
@@ -54,7 +53,7 @@ export function StoreProvider({ children }) {
         // A member whose crew profile is missing (e.g. wiped by a reset) gets one back,
         // instead of silently being treated as the first crew member.
         if (!data.crew.some((u) => u.id === mine.crew_id)) {
-          const row = { id: mine.crew_id, name: email.split('@')[0], emoji: '🌟', color: '#F7B9C8', role: 'Travel buddy' }
+          const row = { id: mine.crew_id, name: 'New traveller', emoji: '🌟', color: '#F7B9C8', role: 'Travel buddy' }
           data = applyOp(data, { col: 'crew', id: row.id, data: row })
           enqueue({ col: 'crew', id: row.id, data: row })
         }
@@ -110,11 +109,14 @@ export function StoreProvider({ children }) {
     setDb((d) => ({ ...d, ...Object.fromEntries(SAMPLE_COLS.map((c) => [c, []])) }))
   }
 
+  // Email goes only into the private members list; the shared crew profile holds just the name.
+  // Membership first, so a failed invite (e.g. duplicate email) doesn't leave an orphan profile.
   const invite = async (inviteEmail, name) => {
-    const u = add('crew', { name, emoji: '🌟', color: '#F7B9C8', role: 'Travel buddy' })
-    const { error } = await supabase.from('members').insert({ email: inviteEmail.trim().toLowerCase(), crew_id: u.id })
-    if (error) return alert(error.message)
-    setMembers(await fetchMembers())
+    const id = uid()
+    const { error } = await supabase.from('members').insert({ email: inviteEmail.trim().toLowerCase(), crew_id: id })
+    if (error) { alert(error.code === '23505' ? 'This email is already on the crew.' : error.message); return false }
+    commit('crew', { id, name, emoji: '🌟', color: '#F7B9C8', role: 'Travel buddy', createdBy: me.id, ...stamp() }, 'added')
+    return true
   }
 
   const person = (id) => db.crew.find((u) => u.id === id)
@@ -123,7 +125,7 @@ export function StoreProvider({ children }) {
   return (
     <Ctx.Provider value={{
       db: view, me, add, update, remove, setTrip: setSingle('trip'), setSettings: setSingle('settings'), reset, clearSample,
-      person, city, session, email, members, status, pending, invite, signOut: () => supabase.auth.signOut(),
+      person, city, session, email, status, pending, invite, signOut: () => supabase.auth.signOut(),
     }}>
       {children}
     </Ctx.Provider>
