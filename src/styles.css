@@ -424,3 +424,4 @@ button.city-head { width: 100%; text-align: left; }
 .guide-why, .guide-how { margin: 10px 0 0; font-size: 14px; }
 .guide-why { background: var(--yellow); color: var(--yellow-d); padding: 10px 12px; border-radius: 12px; }
 .guide-step .link { margin-top: 8px; }
+.danger-zone { margin-top: 36px; font-size: 13px; }

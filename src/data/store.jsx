@@ -42,15 +42,23 @@ export function StoreProvider({ children }) {
         setMembers(m); setMeId(mine.crew_id); localStorage.setItem(ME_KEY, mine.crew_id)
         await flush()
         const rows = await fetchAll()
+        let data
         if (!rows.length) {
           // First sign-in ever: start the shared trip from the demo data.
-          const s = seed()
-          await uploadAll(s)
-          setDb(s)
+          data = seed()
+          await uploadAll(data)
         } else {
           // Re-apply edits that haven't reached the server yet, so they don't flicker away.
-          setDb(pendingOps().reduce(applyOp, toDb(rows)))
+          data = pendingOps().reduce(applyOp, toDb(rows))
         }
+        // A member whose crew profile is missing (e.g. wiped by a reset) gets one back,
+        // instead of silently being treated as the first crew member.
+        if (!data.crew.some((u) => u.id === mine.crew_id)) {
+          const row = { id: mine.crew_id, name: email.split('@')[0], emoji: '🌟', color: '#F7B9C8', role: 'Travel buddy' }
+          data = applyOp(data, { col: 'crew', id: row.id, data: row })
+          enqueue({ col: 'crew', id: row.id, data: row })
+        }
+        setDb(data)
         setStatus('synced')
       } catch { setStatus('offline') }
     }
@@ -90,7 +98,8 @@ export function StoreProvider({ children }) {
   }
 
   const reset = async () => {
-    const s = seed()
+    // Keep the real crew (invited people included) — only the trip content goes back to the demo.
+    const s = { ...seed(), crew: db.crew }
     try { clearOutbox(); await wipeRemote(); await uploadAll(s); setDb(s) }
     catch { alert('Reset needs an internet connection.') }
   }
