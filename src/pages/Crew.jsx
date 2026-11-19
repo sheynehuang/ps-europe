@@ -7,7 +7,7 @@ import { PageHeader, Avatar, FormSheet, Seg } from '../components/ui'
 const COL = { items: 'plan', places: 'place', expenses: 'expense', memories: 'memory', docs: 'document', emergency: 'emergency info' }
 
 export default function Crew() {
-  const { db, me, update, person, invite: sendInvite, signOut, pending } = useStore()
+  const { db, me, update, person, email: myEmail, invite: sendInvite, signOut, pending } = useStore()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [invited, setInvited] = useState('')
@@ -30,7 +30,7 @@ export default function Crew() {
 
       <section className="card signed-in">
         <Avatar id={me.id} size={40} />
-        <span className="grow"><b>Signed in as {me.name}</b><span className="muted small">{pending > 0 ? `${pending} changes waiting to sync` : 'All changes synced'}</span></span>
+        <span className="grow"><b>Signed in as {me.name}</b><span className="muted small">{myEmail}{pending > 0 && ` · ${pending} changes waiting to sync`}</span></span>
         <button className="icon-btn" onClick={() => confirm('Sign out?') && signOut()} aria-label="Sign out"><LogOut size={18} /></button>
       </section>
 
