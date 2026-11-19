@@ -4,7 +4,7 @@ import { Pencil, ArrowRight } from 'lucide-react'
 import { useStore } from '../data/store'
 import { EXPENSE_CATS } from '../lib/meta'
 import { CURRENCIES } from '../lib/rates'
-import { toHome, sumBy, balances, shares, settle, fmtTWD, fmtMoney } from '../lib/money'
+import { toHome, sumBy, balances, shares, settle, fmtTWD, fmtMoney, spending, settlementFor } from '../lib/money'
 import { fmt, today } from '../lib/dates'
 import { PageHeader, Fab, FormSheet, Seg, Avatar, Who, Empty } from '../components/ui'
 
@@ -71,14 +71,15 @@ function ExpenseSheet({ expense, onClose }) {
 }
 
 export default function Money() {
-  const { db, person, setTrip, city } = useStore()
+  const { db, person, setTrip, city, add } = useStore()
   const [params] = useSearchParams()
   const [filter, setFilter] = useState('all')
   const [editing, setEditing] = useState(null)
   const [budgetOpen, setBudgetOpen] = useState(false)
   const ids = db.crew.map((u) => u.id)
-  const all = db.expenses
+  const all = spending(db.expenses)
   const list = all.filter((e) => filter === 'all' || (filter === 'group' ? e.split.length > 1 : e.split.length === 1))
+  const shown = filter === 'all' ? db.expenses : list // settlements appear in the full list only
   const total = list.reduce((s, e) => s + toHome(e), 0)
   const budget = db.trip.budgetTWD
   const pct = Math.min(100, (all.reduce((s, e) => s + toHome(e), 0) / budget) * 100)
@@ -86,10 +87,11 @@ export default function Money() {
   const catData = Object.entries(EXPENSE_CATS).map(([key, c]) => ({ key, ...c, value: byCat[key] || 0 })).filter((d) => d.value > 0).sort((a, b) => b.value - a.value)
   const byCity = sumBy(list, 'cityId')
   const cityMax = Math.max(1, ...Object.values(byCity))
-  const transfers = settle(balances(all, ids))
+  const transfers = settle(balances(db.expenses, ids))
   const share = shares(all, ids)
   const paid = sumBy(all, 'paidBy')
-  const dates = [...new Set(list.map((e) => e.date))].sort().reverse()
+  const dates = [...new Set(shown.map((e) => e.date))].sort().reverse()
+  const markPaid = (t) => confirm(`Record that ${person(t.from)?.name} paid ${person(t.to)?.name} ${fmtTWD(t.amount)}?`) && add('expenses', settlementFor(t, today()))
 
   return (
     <div className="page">
@@ -119,6 +121,7 @@ export default function Money() {
             <Avatar id={t.from} size={30} /><span>{person(t.from)?.name}</span><ArrowRight size={16} />
             <Avatar id={t.to} size={30} /><span>{person(t.to)?.name}</span>
             <b className="grow right">{fmtTWD(t.amount)}</b>
+            <button className="btn ghost sm" onClick={() => markPaid(t)}>Mark as paid</button>
           </div>
         )) : <p className="muted">All square 🎉</p>}
       </section>
@@ -149,12 +152,18 @@ export default function Money() {
         </section>
       )}
 
-      {!list.length && <Empty emoji="🪙" title="No expenses yet" text="Tap + to log your first one." />}
+      {!shown.length && <Empty emoji="🪙" title="No expenses yet" text="Tap + to log your first one." />}
       {dates.map((d) => (
         <div key={d} className="day">
           <div className="day-head"><span className="day-num">{fmt(d)}</span></div>
           <div className="stack">
-            {list.filter((e) => e.date === d).map((e) => (
+            {shown.filter((e) => e.date === d).map((e) => e.settlement ? (
+              <button key={e.id} className="exp-row settled" onClick={() => setEditing(e)}>
+                <span className="pbubble" style={{ background: 'var(--green)' }}>🤝</span>
+                <span className="grow"><b>{person(e.paidBy)?.name} paid {person(e.split[0])?.name} back</b><Who row={e} /></span>
+                <b className="right">{fmtTWD(toHome(e))}</b>
+              </button>
+            ) : (
               <button key={e.id} className="exp-row" onClick={() => setEditing(e)}>
                 <span className="pbubble" style={{ background: EXPENSE_CATS[e.category]?.color }}>{EXPENSE_CATS[e.category]?.emoji}</span>
                 <span className="grow">

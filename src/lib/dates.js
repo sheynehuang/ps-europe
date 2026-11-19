@@ -18,3 +18,4 @@ export const ago = (isoTime) => {
   if (m < 1440) return `${Math.round(m / 60)}h ago`
   return `${Math.round(m / 1440)}d ago`
 }
+export const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d) }

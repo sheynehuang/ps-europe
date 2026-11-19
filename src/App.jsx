@@ -2,7 +2,7 @@ import { HashRouter, Routes, Route, NavLink, useLocation } from 'react-router-do
 import { useEffect } from 'react'
 import { Home as HomeIcon, CalendarDays, Compass, PiggyBank, LayoutGrid } from 'lucide-react'
 import { StoreProvider, useStore } from './data/store'
-import Login, { NotMember } from './pages/Login'
+import Login, { NotMember, ResetPassword } from './pages/Login'
 import Home from './pages/Home'
 import Plan from './pages/Plan'
 import Explore from './pages/Explore'
@@ -49,9 +49,10 @@ function ScrollTop() {
 }
 
 function Gate({ children }) {
-  const { session, status } = useStore()
+  const { session, status, recovery } = useStore()
   if (session === undefined) return <div className="splash"><span className="ps">PS.</span></div>
   if (!session) return <main className="app"><Login /></main>
+  if (recovery) return <main className="app"><ResetPassword /></main>
   if (status === 'not-member') return <main className="app"><NotMember /></main>
   return children
 }

@@ -1,6 +1,14 @@
 // e.rate = how many TWD one unit of e.currency was worth when the expense was recorded.
 export const toHome = (e) => (Number(e.amount) || 0) * (e.currency === 'TWD' ? 1 : Number(e.rate) || 0)
 
+// Settlements (one person paying another back) move money between people but aren't trip spending:
+// they count in balances, never in totals, charts or shares.
+export const spending = (expenses) => expenses.filter((e) => !e.settlement)
+export const settlementFor = ({ from, to, amount }, date) => ({
+  title: 'Settled up', amount: +amount.toFixed(2), currency: 'TWD', rate: 1, category: 'other',
+  date, paidBy: from, split: [to], cityId: '', settlement: true,
+})
+
 export function sumBy(expenses, key) {
   const out = {}
   for (const e of expenses) out[e[key] ?? 'none'] = (out[e[key] ?? 'none'] || 0) + toHome(e)

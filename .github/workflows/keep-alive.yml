@@ -1,0 +1,20 @@
+# Free Supabase projects pause after 7 days without activity. One tiny read a day keeps it awake.
+# Uses only the publishable key (already public in the app); row-level security returns no data.
+name: Keep Supabase awake
+
+on:
+  schedule:
+    - cron: '17 3 * * *'   # every day 03:17 UTC (11:17 Taiwan)
+  workflow_dispatch:        # "Run workflow" button on the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the database
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+            'https://yvxneiuywsyscanvrtsm.supabase.co/rest/v1/rows?select=id&limit=1' \
+            -H 'apikey: sb_publishable_Q7zkBcB5rCiZ0xROvNyz-A_EGEbocH4')
+          echo "Supabase answered HTTP $code"
+          test "$code" = 200

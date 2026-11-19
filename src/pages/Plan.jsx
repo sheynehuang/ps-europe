@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Plus, Pencil, MapPinned } from 'lucide-react'
 import { useStore } from '../data/store'
-import { eachDay, daysBetween, fmt, fmtShort, byDateTime } from '../lib/dates'
+import { eachDay, daysBetween, fmt, fmtShort, byDateTime, addDays } from '../lib/dates'
 import { COUNTRIES, codeOf, flagOf, geocode } from '../lib/countries'
 import ItemCard from '../components/ItemCard'
 import ItemSheet from '../components/ItemSheet'
@@ -30,7 +30,7 @@ function CoordsField({ f, set }) {
 }
 
 function CitySheet({ city, onClose }) {
-  const { db, add, update, remove } = useStore()
+  const { db, add, update, updateMany, remove } = useStore()
   const last = db.cities.at(-1)
   const initial = { country: 'France', tone: TONES[db.cities.length % TONES.length], start: last?.end ?? db.trip.start, end: last?.end ?? db.trip.start, ...city }
   const plans = city.id ? db.items.filter((i) => i.cityId === city.id).length : 0
@@ -43,7 +43,7 @@ function CitySheet({ city, onClose }) {
         { k: 'name', label: 'City', required: true, placeholder: 'Vienna' },
         { k: 'country', label: 'Country', options: COUNTRIES.map((c) => ({ v: c.name, l: `${flagOf(c.code)} ${c.name}` })) },
         { row: [
-          { k: 'start', label: 'Arrive', type: 'date', required: true },
+          { k: 'start', label: 'Arrive', type: 'date', required: true, hint: plans ? 'Change it and you can move this city’s plans too' : undefined },
           { k: 'end', label: 'Leave', type: 'date', required: true, min: f.start },
         ] },
         { k: 'coords', label: 'Map location', render: (f, set) => <CoordsField f={f} set={set} /> },
@@ -56,6 +56,12 @@ function CitySheet({ city, onClose }) {
         const row = { ...f, flag: flagOf(codeOf(f.country)) }
         delete row.coords
         city.id ? update('cities', city.id, row) : add('cities', row)
+        // Moving the arrival date can carry the city's plans along by the same number of days.
+        const shift = city.id ? daysBetween(city.start, f.start) : 0
+        const mine = db.items.filter((i) => i.cityId === city.id)
+        if (shift && mine.length && confirm(`Move ${mine.length} plan${mine.length > 1 ? 's' : ''} in ${f.name} ${Math.abs(shift)} day${Math.abs(shift) > 1 ? 's' : ''} ${shift > 0 ? 'later' : 'earlier'} too?`)) {
+          updateMany('items', mine.map((i) => ({ ...i, date: addDays(i.date, shift) })))
+        }
       }}
       onDelete={city.id && (() => (plans ? alert(`${city.name} still has ${plans} plans. Move or delete them first.`) : remove('cities', city.id)))}
     />

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import {
   supabase, loadCache, saveCache, fetchAll, fetchMembers, uploadAll, wipeRemote, subscribe,
-  enqueue, flush, onPending, pendingOps, clearOutbox,
+  enqueue, flush, onPending, pendingOps, clearOutbox, isRecoveryLink,
 } from './backend'
 import { toDb, applyOp } from './rows'
 import { seed } from './seed'
@@ -20,13 +20,17 @@ export function StoreProvider({ children }) {
   const [status, setStatus] = useState('loading')   // loading | synced | offline | not-member
   const [pending, setPending] = useState(0)
   const [meId, setMeId] = useState(() => localStorage.getItem(ME_KEY))
+  const [recovery, setRecovery] = useState(isRecoveryLink) // opened from a reset-password email
 
   useEffect(() => { saveCache(db) }, [db])
   useEffect(() => onPending(setPending), [])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((e, s) => {
+      setSession(s)
+      if (e === 'PASSWORD_RECOVERY') setRecovery(true)
+    })
     return () => subscription.unsubscribe()
   }, [])
 
@@ -103,6 +107,13 @@ export function StoreProvider({ children }) {
     catch { alert('Reset needs an internet connection.') }
   }
 
+  // Bulk edit (e.g. shifting a city's plans) without one activity-log line per row.
+  const updateMany = (col, rows) => {
+    const next = rows.map((r) => ({ ...r, ...stamp() }))
+    setDb((d) => next.reduce((acc, r) => applyOp(acc, { col, id: r.id, data: r }), d))
+    next.forEach((r) => enqueue({ col, id: r.id, data: r }))
+  }
+
   // Bulk delete without one activity-log line per row.
   const clearSample = () => {
     for (const c of SAMPLE_COLS) for (const r of db[c]) enqueue({ col: c, id: r.id, del: true })
@@ -124,8 +135,9 @@ export function StoreProvider({ children }) {
 
   return (
     <Ctx.Provider value={{
-      db: view, me, add, update, remove, setTrip: setSingle('trip'), setSettings: setSingle('settings'), reset, clearSample,
+      db: view, me, add, update, updateMany, remove, setTrip: setSingle('trip'), setSettings: setSingle('settings'), reset, clearSample,
       person, city, session, email, status, pending, invite, signOut: () => supabase.auth.signOut(),
+      recovery, endRecovery: () => setRecovery(false),
     }}>
       {children}
     </Ctx.Provider>

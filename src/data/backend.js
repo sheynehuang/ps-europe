@@ -3,8 +3,17 @@
 import { createClient } from '@supabase/supabase-js'
 import { toRows } from './rows'
 
+// Email links (confirm / reset password) land here with tokens in the URL hash. Read it before
+// the Supabase client consumes and clears it.
+const linkParams = new URLSearchParams(location.hash.slice(1))
+export const isRecoveryLink = linkParams.get('type') === 'recovery'
+export const linkError = linkParams.get('error_description')
+
 // Publishable key is meant to ship to browsers; row-level security policies protect the data.
-export const supabase = createClient('https://yvxneiuywsyscanvrtsm.supabase.co', 'sb_publishable_Q7zkBcB5rCiZ0xROvNyz-A_EGEbocH4')
+// Implicit flow: email links carry the session in the hash, which works when opened in Safari.
+export const supabase = createClient('https://yvxneiuywsyscanvrtsm.supabase.co', 'sb_publishable_Q7zkBcB5rCiZ0xROvNyz-A_EGEbocH4', {
+  auth: { flowType: 'implicit' },
+})
 
 const CACHE = 'ps-europe-v1'
 const OUTBOX = 'ps-europe-outbox'

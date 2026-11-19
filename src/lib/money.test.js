@@ -1,6 +1,15 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { toHome, balances, settle, convert, shares } from './money.js'
+import { toHome, balances, settle, convert, shares, spending, settlementFor } from './money.js'
+
+test('a settlement clears the debt but is not spending', () => {
+  const ex = [{ amount: 100, currency: 'EUR', rate: 35.123, paidBy: 'a', split: ['a', 'b'] }]
+  const [t] = settle(balances(ex, ['a', 'b']))
+  const all = [...ex, settlementFor(t, '2026-12-10')]
+  assert.deepEqual(settle(balances(all, ['a', 'b'])), [])
+  assert.equal(spending(all).length, 1)
+  assert.deepEqual(shares(spending(all), ['a', 'b']), shares(ex, ['a', 'b']))
+})
 
 test('converts to TWD with stored rate', () => {
   assert.equal(toHome({ amount: 10, currency: 'EUR', rate: 35 }), 350)
