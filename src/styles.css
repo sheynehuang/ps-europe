@@ -428,3 +428,20 @@ button.city-head { width: 100%; text-align: left; }
 .exp-row.settled { background: #F3FAF1; border-style: dashed; }
 .settle-row .btn.sm { padding: 6px 10px; margin-left: 4px; }
 .settle-row { flex-wrap: wrap; row-gap: 6px; }
+
+/* UX pass: shortcuts row, collapsible sections */
+.quick.four { grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: -6px; }
+.quick.four .quick-tile { padding: 14px 4px; font-size: 13px; }
+.stats { margin-top: 18px; }
+details.fold > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-family: var(--serif); font-weight: 700; font-size: 17px; }
+details.fold > summary::-webkit-details-marker { display: none; }
+details.fold > summary::after { content: '▾'; font-size: 14px; color: var(--ink-2); transition: transform .2s; }
+details.fold[open] > summary::after { transform: rotate(180deg); }
+details.fold[open] > summary { margin-bottom: 12px; }
+.advanced { margin-top: 30px; padding: 12px 16px; }
+.advanced > summary { font-size: 14px; color: var(--ink-2); }
+a.day-empty { display: block; }
+.pill.today { background: var(--orange); color: #fff; border-color: var(--orange); }
+.day.is-today .day-num::after { content: ' · Today'; color: var(--orange); }
+.day { scroll-margin-top: 90px; }
+.advanced .more-guide { margin: 4px 0 12px; }

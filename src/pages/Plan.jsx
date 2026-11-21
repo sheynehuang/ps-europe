@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Plus, Pencil, MapPinned } from 'lucide-react'
 import { useStore } from '../data/store'
-import { eachDay, daysBetween, fmt, fmtShort, byDateTime, addDays } from '../lib/dates'
+import { eachDay, daysBetween, fmt, fmtShort, byDateTime, addDays, today } from '../lib/dates'
 import { COUNTRIES, codeOf, flagOf, geocode } from '../lib/countries'
 import ItemCard from '../components/ItemCard'
 import ItemSheet from '../components/ItemSheet'
@@ -94,6 +94,10 @@ export default function Plan() {
   const hint = params.get('hint')
   const cities = db.cities.filter((c) => sel === 'all' || c.id === sel)
   const selCity = db.cities.find((c) => c.id === sel)
+  const t = today()
+  const inTrip = t >= db.trip.start && t <= db.trip.end
+  const jumpToday = () => document.getElementById(`day-${t}`)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  useEffect(() => { if (params.get('today') && inTrip) setTimeout(jumpToday, 450) }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="page">
@@ -102,6 +106,7 @@ export default function Plan() {
       <p className="muted small trip-line">{db.trip.name} · {fmtShort(db.trip.start)} – {fmtShort(db.trip.end)} · {daysBetween(db.trip.start, db.trip.end) + 1} days</p>
 
       <div className="hscroll pills">
+        {inTrip && <button className="pill today" onClick={() => { setParams({}); setTimeout(jumpToday, 100) }}>📍 Today</button>}
         <button className={`pill ${sel === 'all' ? 'on' : ''}`} onClick={() => setParams({})}>🗺️ All</button>
         {db.cities.map((c) => (
           <button key={c.id} className={`pill ${sel === c.id ? 'on' : ''}`} onClick={() => setParams({ city: c.id })}>{c.flag} {c.name}</button>
@@ -127,7 +132,7 @@ export default function Plan() {
             {days.map((d) => {
               const list = mine.filter((i) => i.date === d)
               return (
-                <div key={d} className="day">
+                <div key={d} id={`day-${d}`} className={`day ${d === t ? 'is-today' : ''}`}>
                   <div className="day-head">
                     <span className="day-num">Day {daysBetween(db.trip.start, d) + 1}</span>
                     <span className="muted">{fmt(d)}</span>

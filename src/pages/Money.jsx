@@ -74,7 +74,7 @@ export default function Money() {
   const { db, person, setTrip, city, add } = useStore()
   const [params] = useSearchParams()
   const [filter, setFilter] = useState('all')
-  const [editing, setEditing] = useState(null)
+  const [editing, setEditing] = useState(() => (params.get('new') ? {} : null))
   const [budgetOpen, setBudgetOpen] = useState(false)
   const ids = db.crew.map((u) => u.id)
   const all = spending(db.expenses)
@@ -129,7 +129,8 @@ export default function Money() {
       <Seg value={filter} onChange={setFilter} options={[{ v: 'all', l: 'All' }, { v: 'group', l: '👯 Shared' }, { v: 'personal', l: '🙋 Personal' }]} />
 
       {catData.length > 0 && (
-        <section className="card chart-card">
+        <details className="card chart-card fold">
+          <summary>📊 Spending charts</summary>
           <h3>By category</h3>
           <div className="donut-row">
             <Donut data={catData} />
@@ -149,7 +150,7 @@ export default function Money() {
               </div>
             ))}
           </div>
-        </section>
+        </details>
       )}
 
       {!shown.length && <Empty emoji="🪙" title="No expenses yet" text="Tap + to log your first one." />}

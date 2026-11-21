@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { Plane, ArrowRight, Cloud, CloudOff, Wallet, BookHeart, Users, Wrench, Compass, PiggyBank } from 'lucide-react'
+import { Plane, ArrowRight, Cloud, CloudOff, Ticket, Plus, CalendarDays, Camera } from 'lucide-react'
 import { useStore } from '../data/store'
 import { today, daysBetween, fmt, fmtShort, byDateTime, ago } from '../lib/dates'
 import { BOOKING_TYPES } from '../lib/meta'
@@ -10,13 +10,12 @@ import ItemCard from '../components/ItemCard'
 import ItemSheet from '../components/ItemSheet'
 import { Avatar, Chip } from '../components/ui'
 
-const QUICK = [
-  { to: '/explore', label: 'Explore', icon: Compass, tone: 'green' },
-  { to: '/money', label: 'Expenses', icon: PiggyBank, tone: 'peach' },
-  { to: '/wallet', label: 'Wallet', icon: Wallet, tone: 'blue' },
-  { to: '/memories', label: 'Memories', icon: BookHeart, tone: 'pink' },
-  { to: '/crew', label: 'Crew', icon: Users, tone: 'yellow' },
-  { to: '/tools', label: 'Tools', icon: Wrench, tone: 'green' },
+// The four things you reach for most while travelling, one tap from Home.
+const ACTIONS = [
+  { to: '/wallet', label: 'Tickets', icon: Ticket, tone: 'blue' },
+  { to: '/money?new=1', label: 'Expense', icon: Plus, tone: 'peach' },
+  { to: '/plan?today=1', label: 'Today', icon: CalendarDays, tone: 'green' },
+  { to: '/memories?new=1', label: 'Memory', icon: Camera, tone: 'pink' },
 ]
 
 export function Countdown({ trip }) {
@@ -36,7 +35,12 @@ export default function Home() {
   const total = daysBetween(trip.start, trip.end) + 1
   const flags = [...new Map(cities.map((c) => [c.country, c.flag])).values()]
   const bookings = items.filter((i) => BOOKING_TYPES.includes(i.type)).length
-  const upcoming = items.filter((i) => i.date >= today()).sort(byDateTime).slice(0, 4)
+  const t = today()
+  const inTrip = t >= trip.start && t <= trip.end
+  const todays = items.filter((i) => i.date === t).sort(byDateTime)
+  // During the trip show today's plans; otherwise (or on a free day) the next few.
+  const showToday = inTrip && todays.length > 0
+  const upcoming = showToday ? todays : items.filter((i) => i.date >= t).sort(byDateTime).slice(0, 4)
 
   return (
     <div className="page">
@@ -69,12 +73,17 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="stats">
-        <Link to="/plan" className="stat peach"><b>{total}</b><span>Days total</span><i>🗓️</i></Link>
-        <Link to="/explore" className="stat green"><b>{flags.length}</b><span>Countries</span><i>🌍</i></Link>
-        <Link to="/plan" className="stat pink"><b>{cities.length}</b><span>Cities</span><i>🏙️</i></Link>
-        <Link to="/wallet" className="stat blue"><b>{bookings}</b><span>Bookings</span><i>🎫</i></Link>
-      </section>
+      <nav className="quick four" aria-label="Shortcuts">
+        {ACTIONS.map(({ to, label, icon: Icon, tone }) => (
+          <Link key={to} to={to} className={`quick-tile ${tone}`}><Icon size={24} /><span>{label}</span></Link>
+        ))}
+      </nav>
+
+      <div className="section-head"><h2>{showToday ? 'Today' : 'Up next'}</h2><Link to="/plan">See all <ArrowRight size={16} /></Link></div>
+      <div className="stack">
+        {upcoming.map((i) => <ItemCard key={i.id} item={i} showDate={!showToday} onClick={() => setEditing(i)} />)}
+        {!upcoming.length && <Link to="/plan" className="day-empty">Nothing planned yet ✨ tap to add your first plan</Link>}
+      </div>
 
       <div className="section-head"><h2>The route</h2><Link to="/plan">Itinerary <ArrowRight size={16} /></Link></div>
       <div className="hscroll">
@@ -88,17 +97,12 @@ export default function Home() {
         ))}
       </div>
 
-      <div className="section-head"><h2>Up next</h2><Link to="/plan">See all <ArrowRight size={16} /></Link></div>
-      <div className="stack">
-        {upcoming.map((i) => <ItemCard key={i.id} item={i} showDate onClick={() => setEditing(i)} />)}
-      </div>
-
-      <div className="section-head"><h2>Quick access</h2></div>
-      <div className="quick">
-        {QUICK.map(({ to, label, icon: Icon, tone }) => (
-          <Link key={to} to={to} className={`quick-tile ${tone}`}><Icon size={24} /><span>{label}</span></Link>
-        ))}
-      </div>
+      <section className="stats">
+        <Link to="/plan" className="stat peach"><b>{total}</b><span>Days total</span><i>🗓️</i></Link>
+        <Link to="/explore" className="stat green"><b>{flags.length}</b><span>Countries</span><i>🌍</i></Link>
+        <Link to="/plan" className="stat pink"><b>{cities.length}</b><span>Cities</span><i>🏙️</i></Link>
+        <Link to="/wallet" className="stat blue"><b>{bookings}</b><span>Bookings</span><i>🎫</i></Link>
+      </section>
 
       <div className="section-head"><h2>Crew activity</h2><Link to="/crew">All <ArrowRight size={16} /></Link></div>
       <div className="card feed">

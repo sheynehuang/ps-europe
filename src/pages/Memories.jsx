@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { ImagePlus, X } from 'lucide-react'
 import { useStore, uid } from '../data/store'
 import { uploadPhoto } from '../data/backend'
@@ -30,9 +31,11 @@ function Photos({ f, set }) {
 
 export default function Memories() {
   const { db, add, update, remove, city } = useStore()
-  const [editing, setEditing] = useState(null)
-  const [cityId, setCityId] = useState('all')
+  const [params] = useSearchParams()
   const cityFor = (date) => db.cities.find((c) => date >= c.start && date < c.end)?.id ?? ''
+  const blank = () => ({ date: today(), cityId: cityFor(today()), mood: '🥰', photos: [] })
+  const [editing, setEditing] = useState(() => (params.get('new') ? blank() : null))
+  const [cityId, setCityId] = useState('all')
   const list = db.memories.filter((m) => cityId === 'all' || m.cityId === cityId)
   const dates = [...new Set(list.map((m) => m.date))].sort().reverse()
 
@@ -68,7 +71,7 @@ export default function Memories() {
         </section>
       ))}
 
-      <Fab label="New memory" onClick={() => setEditing({ date: today(), cityId: cityFor(today()), mood: '🥰', photos: [] })} />
+      <Fab label="New memory" onClick={() => setEditing(blank())} />
       {editing && (
         <FormSheet title={editing.id ? 'Edit memory' : 'New memory'} initial={editing} onClose={() => setEditing(null)}
           fields={[
